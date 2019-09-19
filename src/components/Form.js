@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { withFormik, Form, Field } from "yup";
+import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-import { validateYupSchema } from "formik";
 
-const userForm = ({ value, error, touched, stauts }) => {
-  const [userForm, setUserForm] = usestate();
+const UserForm = ({ value, errors, touched, status }) => {
+  const [userForm, setUserForm] = useState();
   useEffect(() => {
     // ask chris about the if statement and why we are spreading useform ad setting status in the arrey?
     if (status) {
@@ -19,21 +18,27 @@ const userForm = ({ value, error, touched, stauts }) => {
         {touched.name && errors.name && <p className="error">{errors.name}</p>}
 
         <Field type="text" name="email" placeholder="Enter Email" />
+        {touched.email && errors.email && (
+          <p className="error">{errors.email}</p>
+        )}
 
         <Field type="password" name="password" placeholder="Enter Password" />
+        {touched.password && errors.password && (
+          <p className="error">{errors.password}</p>
+        )}
 
         <label>
           Agree to Terms of Service
-          <Field type="checkbox" name="I agree" />
+          <Field type="checkbox" name="I agree" checked={value.agree} />
         </label>
+        <button>Submit</button>
       </Form>
-      <button>Submit</button>
+
       {userForm.map(users => (
         <ul key={users.id}>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
+          <li>{users.name}</li>
+          <li>{users.password}</li>
+          <li>{users.email}</li>
         </ul>
       ))}
     </div>
@@ -47,17 +52,25 @@ const FormikUserForm = withFormik({
       password: password || "",
       agree: agree || true
     };
+  },
+
+  validateSchema: Yup.object().shape({
+    name: Yup.string().required("Email Required"),
+    password: Yup.string()
+      .min(8, "min of 8 characters needed")
+      .required("Password Needed"),
+    email: Yup.string()
+      .email("Email not valid")
+      .required("Email Needed")
+  }),
+
+  handlesubmit(value, { setStatus }) {
+    axios
+      .post("https://reqres.in/api/users/", value)
+      .then(res => {
+        setStatus(res.data);
+      })
+      .catch(error => console.log(error.res));
   }
-});
-
-validateSchema: Yup.object().shape({
-  name: Yup.string().required("Email Required"),
-  password: Yup.string()
-    .min(8, "min of 8 characters needed")
-    .required("Password Needed"),
-  email: Yup.string()
-    .email("Email not valid")
-    .required("Email Needed")
-});
-
-export default FormikUesrForm;
+})(UserForm);
+export default UserForm;
