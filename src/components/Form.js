@@ -3,17 +3,15 @@ import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 
-const UserForm = ({ value, errors, touched, status }) => {
-  const [userForm, setUserForm] = useState();
+const UserForm = ({ values, errors, touched, status, handleSubmit }) => {
+  const [userForm, setUserForm] = useState([]);
   useEffect(() => {
-    // ask chris about the if statement and why we are spreading useform ad setting status in the arrey?
-    if (status) {
-      setUserForm([...userForm, status]);
-    }
+    status && setUserForm([...userForm, status]);
   }, [status]);
+
   return (
-    <div classname="user-form">
-      <Form>
+    <div className="user-form">
+      <Form onSubmit={handleSubmit}>
         <Field type="text" name="name" placeholder="Enter Name" />
         {touched.name && errors.name && <p className="error">{errors.name}</p>}
 
@@ -29,9 +27,10 @@ const UserForm = ({ value, errors, touched, status }) => {
 
         <label>
           Agree to Terms of Service
-          <Field type="checkbox" name="I agree" checked={value.agree} />
+          <Field type="checkbox" name="agree" checked={values.agree} />
         </label>
-        <button>Submit</button>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
       </Form>
 
       {userForm.map(users => (
@@ -54,7 +53,7 @@ const FormikUserForm = withFormik({
     };
   },
 
-  validateSchema: Yup.object().shape({
+  validationSchema: Yup.object().shape({
     name: Yup.string().required("Email Required"),
     password: Yup.string()
       .min(8, "min of 8 characters needed")
@@ -64,13 +63,15 @@ const FormikUserForm = withFormik({
       .required("Email Needed")
   }),
 
-  handlesubmit(value, { setStatus }) {
+  handleSubmit(values, { setStatus }) {
     axios
-      .post("https://reqres.in/api/users/", value)
-      .then(res => {
-        setStatus(res.data);
+      .post("https://reqres.in/api/users/", values)
+      .then(response => {
+        setStatus(response.data);
+        console.log(response);
       })
-      .catch(error => console.log(error.res));
+      .catch(error => console.log(error.response));
   }
 })(UserForm);
-export default UserForm;
+// console.log("This is the HOC", FormikUserForm);
+export default FormikUserForm;

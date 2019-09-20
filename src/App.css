@@ -1,7 +1,10 @@
 .App {
   text-align: center;
 }
-
+.App > div {
+  display: flex;
+  flex-direction: column;
+}
 .App-logo {
   height: 40vmin;
 }
